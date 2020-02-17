@@ -1,2 +1,2 @@
 # grad-project
-My graduation project about blind signal processing
+This repository contains the code for my graduation project, which builds a system to separate mixed modulation signals and classify them.
