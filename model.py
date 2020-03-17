@@ -39,4 +39,5 @@ class MultiCLDNN(nn.Module):
         x4 = x4.reshape((batch_size, time_step, -1))
         input_dim = x4.shape[1]
         lstm_out = nn.LSTM(input_size=input_dim, hidden_size=50, batch_first=True)(x4)
+        lstm_out = nn.Sigmoid(lstm_out)
         return lstm_out
