@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data.dataloader import DataLoader
 from dataset import MixedSignalDataset
+from utils import TrainerLogger
+from tqdm import trange
 
 from model import MultiCLDNN
 
@@ -12,17 +14,26 @@ if (torch.cuda.is_available()):
 else:
     device = torch.device("cpu")
 
-EPISODE = 1000
+EPISODE = 10
 LR = 1e-5
 
 model = MultiCLDNN(kernel_size=8).to(device)
 optimizer = optim.Adam(model.parameters(), lr = LR)
 dataset = MixedSignalDataset()
 dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
-loss_fn = 
+loss_fn = F.binary_cross_entropy_with_logits
+trainer_logger = TrainerLogger()
 
-for episode in range(EPISODE):
+for episode in trange(EPISODE):
     for sample in dataloader:
         feature = sample[0]
-        label = sample[1]
+        logit = sample[1]
         pred = model(feature)
+        loss = loss_fn(pred, logit)
+        loss.backward()
+        optimizer.step()
+    trainer_logger.log(loss)
+trainer_logger.plot()
+
+    
+    
