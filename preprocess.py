@@ -12,7 +12,6 @@ label_arr = []
 from tqdm import trange
 
 for state in trange(1<<11):
-    print(state)
     idx_list = []
     label = np.zeros((1,11), dtype=np.int)
     name = ""
@@ -27,7 +26,6 @@ for state in trange(1<<11):
             name += "_" + mod_list[j]
     if (cnt != 5): continue
     label = np.repeat(label, 1000, axis=0)
-    print(f"combining {idx_list}")
     for snr in SNR_range:
         cur_feature_arr = np.zeros((1000, 2, 128))
         label_arr.append(label)
