@@ -19,10 +19,13 @@ LR = 1e-5
 
 model = MultiCLDNN(kernel_size=8).to(device)
 optimizer = optim.Adam(model.parameters(), lr = LR)
-dataset = MixedSignalDataset()
+dataset = MixedSignalDataset(device=device)
 dataloader = DataLoader(dataset, batch_size=100, shuffle=True)
 loss_fn = F.binary_cross_entropy_with_logits
 trainer_logger = TrainerLogger()
+
+print("data loaded!")
+print("-"*30)
 
 for episode in trange(EPISODE):
     for sample in dataloader:
@@ -33,7 +36,5 @@ for episode in trange(EPISODE):
         loss.backward()
         optimizer.step()
     trainer_logger.log(loss)
+    print(f"training loss:\t{loss}")
 trainer_logger.plot()
-
-    
-    
