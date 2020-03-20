@@ -14,7 +14,9 @@ if (torch.cuda.is_available()):
 else:
     device = torch.device("cpu")
 
-EPISODE = 10
+print(device)
+
+EPISODE = 10000
 LR = 1e-5
 
 model = MultiCLDNN(kernel_size=8).to(device)

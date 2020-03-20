@@ -8,7 +8,7 @@ with open(data_dir, "rb") as f:
     data = pickle.load(f, encoding = "iso-8859-1")
 
 mod_list = list({key[0] for key in data.keys()})
-SNR_range = range(-6, 6, 2)
+SNR_range = range(-4, 4, 2)
 feature_arr = []
 label_arr = []
 

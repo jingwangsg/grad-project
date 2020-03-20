@@ -6,7 +6,7 @@ class ConvBlock(nn.Module):
     
     def __init__(self, in_channels, out_channels, kernel_size, dropout_rate, activation="relu"):
         super(ConvBlock, self).__init__()
-        self.pad = nn.ZeroPad2d((0, 0, kernel_size//2, kernel_size//2))
+        self.pad = nn.ZeroPad2d((kernel_size//2, kernel_size//2, 0, 0))
         self.conv = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(1, kernel_size))
         if (activation == "relu"):
             self.activation = nn.ReLU()
@@ -30,13 +30,17 @@ class MultiCLDNN(nn.Module):
         self.conv3 = ConvBlock(50, 50, kernel_size, 0.5)
 
     def forward(self, x):
+        # (batch, channel, height, width)
         x1 = self.conv1(x)
         x2 = self.conv2(x1)
         x3 = self.conv3(x2)
-        x4 = torch.cat([x1, x3])
+        x1 = x1.reshape((x1.shape[0], x1.shape[1], -1))
+        x3 = x3.reshape((x3.shape[0], x3.shape[1], -1))
+        x4 = torch.cat([x1, x3], dim=2)
         batch_size = x4.shape[0]
         time_step = x4.shape[1]
         x4 = x4.reshape((batch_size, time_step, -1))
+        import ipdb; ipdb.set_trace()
         input_dim = x4.shape[1]
         lstm_out = nn.LSTM(input_size=input_dim, hidden_size=50, batch_first=True)(x4)
         lstm_out = nn.Sigmoid(lstm_out)
