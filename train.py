@@ -15,7 +15,7 @@ else:
 print(device)
 
 num_epoch = 10000
-lr = 1e-3 //1e-3
+lr = 1e-3
 batch_size = 1024
 
 hidden_size = 128
@@ -26,7 +26,7 @@ data_dir = "./data/train_data_400_with_high_snr.h5"
 
 model = LSTMNet(hidden_size=hidden_size, num_layers=num_layers,
                 batch_size=batch_size, output_size=num_class).to(device)
-optimizer = optim.RMSprop(model.parameters(), lr = lr)
+optimizer = optim.Adam(model.parameters(), lr = lr)
 dataset = MixedSignalIQDataset(data_dir=data_dir, device=device)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 print("loaded into DataLoader!")
