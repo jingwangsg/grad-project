@@ -7,24 +7,23 @@ class LSTMNet(nn.Module):
         model built with 2 lstm layers
     """
 
-    def __init__(self, hidden_size, num_layers, batch_size, output_size):
+    def __init__(self, params):
         super(LSTMNet, self).__init__()
-        #! pytorch document: https://pytorch.org/docs/stable/nn.html
+        #! usage of LSTM: https://pytorch.org/docs/stable/nn.html#torch.nn.LSTM
         # initilize h0, c0 (num_layers * num_directions, batch, hidden_size)
         # output: (seq_len, batch, num_directions * hidden_size) supposedly, but here we use "batch_first"
-        self.hidden = (torch.randn(num_layers, batch_size, hidden_size).cuda(), \
-                       torch.randn(num_layers, batch_size, hidden_size).cuda())
-        self.double_lstm = nn.LSTM(input_size=2, hidden_size=hidden_size, 
-                                   num_layers=2, batch_first=True)
+
+        self.hidden = (torch.randn(params.num_layers, params.batch_size, params.hidden_size).cuda(), \
+                       torch.randn(params.num_layers, params.batch_size, params.hidden_size).cuda())
+        self.double_lstm = nn.LSTM(input_size=params.input_size, hidden_size=params.hidden_size, 
+                                   num_layers=params.num_layers, batch_first=True)
         # batch_first, (batch, seq_len, num_directions * hidden_size)
-        self.linear = nn.Linear(hidden_size, hidden_size)
-        self.output_layer = nn.Linear(hidden_size, output_size)
+        self.linear = nn.Linear(params.hidden_size, params.output_size)
 
     def forward(self, x):
         lstm_out, _ = self.double_lstm(x, self.hidden)
         enc = lstm_out[:, -1]
-        linear_out1 = self.linear(enc)
-        linear_out = self.output_layer(linear_out1)
+        linear_out = self.linear(enc)
         return linear_out
 
         
