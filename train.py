@@ -53,7 +53,7 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
         cur_batch_sum = {metric: metrics[metric](logit, y_batch, params) for metric in metrics}
         cur_batch_sum["loss"] = loss.item()
         batch_sums.append(cur_batch_sum)
-        tloader.set_postfix(loss='{:05.3f}'.format(loss_avg()))
+        tloader.set_postfix(loss='{:05.3f}'.format(loss_avg()) )
 
     metric_means = {metric: np.mean([x[metric] for x in batch_sums]) for metric in metrics}
     metric_str = " ; ".join("{}: {:05.3f}".format(k, v)\
@@ -112,19 +112,21 @@ def train_and_evaluate(model, train_dataset, val_dataset, optimizer, loss_fn, me
         train(model, train_dataloader, optimizer, loss_fn, metrics, params)
         val_metric = evaluate(model, val_dataloader, loss_fn, metrics, params)
 
-    val_acc = val_metric["accuracy"]
-    if (val_acc > best_val_acc):
-        best_val_acc = val_acc
+        val_acc = val_metric["accuracy"]
 
-    save_checkpoint({
-        'epoch': epoch,
-        'state_dict': model.state_dict(),
-        'optim_dict': optimizer.state_dict(),
-    }, is_best=is_best, checkpoint=model_dir)
+        is_best = val_acc > best_val_acc
+        if (is_best):
+            best_val_acc = val_acc
 
-    if (is_best):
-        # print all val_metric into json
-        pass
+        save_checkpoint({
+            'epoch': epoch,
+            'state_dict': model.state_dict(),
+            'optim_dict': optimizer.state_dict(),
+        }, is_best=is_best, checkpoint=model_dir)
+
+        if (is_best):
+            # print all val_metric into json
+            pass
 
 import argparse
 

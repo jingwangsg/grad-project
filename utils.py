@@ -48,7 +48,7 @@ class RunningAverage():
 def save_checkpoint(state, is_best, checkpoint):
     #* Here checkpoint is the folder including parameter (last and best)
     file_path = os.path.join(checkpoint, "last.pth.tar")
-    if (os.path.exists(checkpoint)):
+    if (not os.path.exists(checkpoint)):
         print("Dictionary does not exist! Creating dictionary {}".format(checkpoint))
         os.mkdir(checkpoint)
     else:

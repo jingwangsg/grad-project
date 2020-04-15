@@ -9,7 +9,7 @@ class LSTMNet(nn.Module):
 
     def __init__(self, params):
         super(LSTMNet, self).__init__()
-        #! usage of LSTM: https://pytorch.org/docs/stable/nn.html#torch.nn.LSTM
+        #! https://pytorch.org/docs/stable/nn.html#torch.nn.LSTM
         # initilize h0, c0 (num_layers * num_directions, batch, hidden_size)
         # output: (seq_len, batch, num_directions * hidden_size) supposedly, but here we use "batch_first"
 
@@ -18,11 +18,15 @@ class LSTMNet(nn.Module):
         self.double_lstm = nn.LSTM(input_size=params.input_size, hidden_size=params.hidden_size, 
                                    num_layers=params.num_layers, batch_first=True)
         # batch_first, (batch, seq_len, num_directions * hidden_size)
+        #! https://pytorch.org/docs/stable/nn.html#batchnorm1d
+        #  C from an expected input of size (N, C, L) or L from input of size (N, L)
+        self.batchnorm = nn.BatchNorm1d(params.hidden_size)
         self.linear = nn.Linear(params.hidden_size, params.output_size)
 
     def forward(self, x):
         lstm_out, _ = self.double_lstm(x, self.hidden)
         enc = lstm_out[:, -1]
+        enc = self.batchnorm(enc)
         linear_out = self.linear(enc)
         return linear_out
 
