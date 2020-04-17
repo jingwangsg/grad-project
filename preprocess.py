@@ -12,7 +12,7 @@ mod_list = list({key[0] for key in data.keys()})
 SNR_range = range(-2, 12, 2)
 feature_arr = []
 label_arr = []
-sample_per_pair = 400
+sample_per_pair = 600
 
 
 for state in trange(1<<11):
@@ -28,7 +28,7 @@ for state in trange(1<<11):
             idx_list.append(j)
             label[0][j] = 1
             name += "_" + mod_list[j]
-    if (cnt != 3): continue
+    if (cnt != 5): continue
     label = np.repeat(label, sample_per_pair, axis=0)
     for snr in SNR_range:
         cur_feature_arr = np.zeros((sample_per_pair, 2, 128))
@@ -39,6 +39,6 @@ for state in trange(1<<11):
         feature_arr.append(cur_feature_arr)
 logit_arr = np.vstack(label_arr)
 feature_arr = np.vstack(feature_arr)
-with h5py.File(f"./data/train_data_{sample_per_pair}_with_high_snr.h5", "w") as f:
+with h5py.File(f"./data/train_data_5_{sample_per_pair}_with_high_snr.h5", "w") as f:
     f.create_dataset('feature_mat', data=feature_arr)
     f.create_dataset("logit_mat", data=logit_arr)
