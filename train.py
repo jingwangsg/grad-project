@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from model.dataset import MixedSignalDataset
 from torch.utils.data.dataloader import DataLoader
-from model.lstm_net import LSTMNet
+from model.gru_net import GRUNet
 import model.dataset as dataset
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -37,7 +37,8 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
     tloader = tqdm(dataloader)
     loss_avg = RunningAverage()
     batch_sums = []
-    #here sum means "summary"
+    #! https://discuss.pytorch.org/t/cyclic-learning-rate-how-to-use/53796
+    scheduler = optim.lr_scheduler.CyclicLR(optimizer, base_lr=params.learning_rate, max_lr=1e-2, step_size_up=2000)
 
     for (X_batch, y_batch) in tloader:
         if (X_batch.shape[0] != params.batch_size): continue
@@ -48,6 +49,7 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        scheduler.step()
 
         loss_avg.update(loss.item())
         cur_batch_sum = {metric: metrics[metric](logit, y_batch, params) for metric in metrics}
