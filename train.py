@@ -13,6 +13,7 @@ from utils import RunningAverage, load_checkpoint, save_checkpoint, metrics
 import utils
 import os
 import numpy as np
+from tensorboardX import SummaryWriter
 
 if (torch.cuda.is_available()):
     device = torch.device("cuda")
@@ -32,6 +33,7 @@ else:
 # #! different usages of entropy related loss: https://sebastianraschka.com/faq/docs/pytorch-crossentropy.html
 # loss_fn = F.binary_cross_entropy_with_logits
 
+
 def train(model, dataloader, optimizer, loss_fn, metrics, params):
     model.train()
 
@@ -39,7 +41,6 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
     loss_avg = RunningAverage()
     batch_sums = []
     #! https://discuss.pytorch.org/t/cyclic-learning-rate-how-to-use/53796
-    scheduler = optim.lr_scheduler.CyclicLR(optimizer, base_lr=params.learning_rate, max_lr=1e-2, step_size_up=2000, cycle_momentum=False)
 
     for (X_batch, y_batch) in tloader:
         if (X_batch.shape[0] != params.batch_size): continue
@@ -50,11 +51,12 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+        # scheduler.step()
 
         loss_avg.update(loss.item())
         cur_batch_sum = {metric: metrics[metric](logit, y_batch, params) for metric in metrics}
         cur_batch_sum["loss"] = loss.item()
+        writer
         batch_sums.append(cur_batch_sum)
         tloader.set_postfix(loss='{:05.3f}'.format(loss_avg()) )
 
@@ -134,6 +136,7 @@ def train_and_evaluate(model, train_dataset, val_dataset, optimizer, loss_fn, me
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--model_type")
 parser.add_argument("--data_dir")
 parser.add_argument("--model_dir")
 parser.add_argument("--restore_file", default=None)
@@ -147,6 +150,8 @@ if (__name__ == "__main__"):
         --restore_file: load weight according to which parameter file (if any)
     """
     args = parser.parse_args()
+    log_path = os.path.join("./logs", args.model_dir)
+    writer = SummaryWriter(logdir="./logs/")
     json_path = os.path.join(args.model_dir, "params.json")
     assert os.path.exists(json_path), "No json file found at {}".format(json_path)
     params = utils.Params(json_path)
@@ -161,7 +166,10 @@ if (__name__ == "__main__"):
     splited_len = [num_train_sample, num_sample - num_train_sample]
     train_dataset, val_dataset = torch.utils.data.random_split(raw_dataset, splited_len)
 
-    model = LSTMNet(params).to(device)
+    models = {"LSTMNet": LSTMNet, "GRUNet": GRUNet}
+    model_class = models[args.model_type]
+    model = model_class(params).to(device)
+    print(model)
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
     loss_fn = F.binary_cross_entropy_with_logits
 

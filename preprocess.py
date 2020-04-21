@@ -1,6 +1,8 @@
 import _pickle as pickle
 import h5py
 import numpy as np
+import argparse
+from sklearn.preprocessing import normalize
 from sklearn.model_selection import train_test_split
 from tqdm import trange
 
@@ -9,10 +11,17 @@ with open(data_dir, "rb") as f:
     data = pickle.load(f, encoding = "iso-8859-1")
 
 mod_list = list({key[0] for key in data.keys()})
-SNR_range = range(-2, 12, 2)
+SNR_range = range(0, 12, 2)
 feature_arr = []
 label_arr = []
-sample_per_pair = 600
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--num_sample")
+parser.add_argument("--num_type")
+args = parser.parse_args()
+
+sample_per_pair = int(args.num_sample)
+num_type = int(args.num_type)
 
 
 for state in trange(1<<11):
@@ -28,7 +37,7 @@ for state in trange(1<<11):
             idx_list.append(j)
             label[0][j] = 1
             name += "_" + mod_list[j]
-    if (cnt != 5): continue
+    if (cnt != num_type): continue
     label = np.repeat(label, sample_per_pair, axis=0)
     for snr in SNR_range:
         cur_feature_arr = np.zeros((sample_per_pair, 2, 128))
@@ -39,6 +48,12 @@ for state in trange(1<<11):
         feature_arr.append(cur_feature_arr)
 logit_arr = np.vstack(label_arr)
 feature_arr = np.vstack(feature_arr)
-with h5py.File(f"./data/train_data_5_{sample_per_pair}_with_high_snr.h5", "w") as f:
+feature_arr = feature_arr.reshape((feature_arr.shape[0], -1))
+feature_arr = normalize(feature_arr, norm="l2")
+feature_arr = feature_arr.reshape((feature_arr.shape[0], 2, 128))
+#! https://docs.scipy.org/doc/numpy/reference/generated/numpy.transpose.html
+feature_arr = feature_arr.transpose([0, 2, 1])
+
+with h5py.File(f"./data/rml_data_{num_type}_{sample_per_pair}_with_high_snr.h5", "w") as f:
     f.create_dataset('feature_mat', data=feature_arr)
     f.create_dataset("logit_mat", data=logit_arr)

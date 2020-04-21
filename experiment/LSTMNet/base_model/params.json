@@ -1,7 +1,7 @@
 {
     "input_size": 2,
     "batch_size": 1024,
-    "num_layers": 2,
+    "num_layers": 3,
     "hidden_size": 128,
     "output_size": 11,
     "learning_rate": 1e-3,
