@@ -20,6 +20,10 @@ if (torch.cuda.is_available()):
 else:
     device = torch.device("cpu")
 
+#! How to use TensorBoardX https://www.jianshu.com/p/46eb3004beca
+writer = None
+args = None
+
 # model = LSTMNet(hidden_size=hidden_size, num_layers=num_layers,
 #                 batch_size=batch_size, output_size=num_class).to(device)
 # optimizer = optim.Adam(model.parameters(), lr = lr)
@@ -34,7 +38,7 @@ else:
 # loss_fn = F.binary_cross_entropy_with_logits
 
 
-def train(model, dataloader, optimizer, loss_fn, metrics, params):
+def train(model, dataloader, optimizer, loss_fn, metrics, params, epoch):
     model.train()
 
     tloader = tqdm(dataloader)
@@ -56,16 +60,18 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params):
         loss_avg.update(loss.item())
         cur_batch_sum = {metric: metrics[metric](logit, y_batch, params) for metric in metrics}
         cur_batch_sum["loss"] = loss.item()
-        writer
         batch_sums.append(cur_batch_sum)
         tloader.set_postfix(loss='{:05.3f}'.format(loss_avg()) )
-
-    metric_means = {metric: np.mean([x[metric] for x in batch_sums]) for metric in metrics}
+    
+    metric_with_loss = list(metrics.keys()) + ["loss"]
+    metric_means = {metric: np.mean([x[metric] for x in batch_sums]) for metric in metric_with_loss}
     metric_str = " ; ".join("{}: {:05.3f}".format(k, v)\
                                 for (k, v) in metric_means.items())
     print("- Train metrics: " + metric_str)
+    for (k, v) in metric_means.items():
+        writer.add_scalar(args.model_type + "/scalar/train/"+k, v, epoch)
 
-def evaluate(model, dataloader, loss_fn, metrics, params):
+def evaluate(model, dataloader, loss_fn, metrics, params, epoch):
     model.eval()
 
     tloader = tqdm(dataloader)
@@ -80,10 +86,13 @@ def evaluate(model, dataloader, loss_fn, metrics, params):
         cur_batch_sum["loss"] = loss.item()
         batch_sums.append(cur_batch_sum)
 
-    metric_means = {metric: np.mean([x[metric] for x in batch_sums]) for metric in metrics}
+    metric_with_loss = list(metrics.keys()) + ["loss"]
+    metric_means = {metric: np.mean([x[metric] for x in batch_sums]) for metric in metric_with_loss}
     metric_str = " ; ".join("{}: {:05.3f}".format(k, v)\
                                 for (k, v) in metric_means.items())
     print("- Test metrics: " + metric_str)
+    for (k, v) in metric_means.items():
+        writer.add_scalar(args.model_type + "/scalar/test/" + k, v, epoch)
 
     #* return metric to decide whether it's the best result during epochs
     return metric_means
@@ -114,8 +123,8 @@ def train_and_evaluate(model, train_dataset, val_dataset, optimizer, loss_fn, me
     for epoch in range(params.num_epochs):
         #! https://www.runoob.com/python/att-string-format.html
         print("[Epoch {}/{}]".format(epoch, params.num_epochs))
-        train(model, train_dataloader, optimizer, loss_fn, metrics, params)
-        val_metric = evaluate(model, val_dataloader, loss_fn, metrics, params)
+        train(model, train_dataloader, optimizer, loss_fn, metrics, params, epoch)
+        val_metric = evaluate(model, val_dataloader, loss_fn, metrics, params, epoch)
 
         val_acc = val_metric["accuracy"]
 
@@ -151,7 +160,7 @@ if (__name__ == "__main__"):
     """
     args = parser.parse_args()
     log_path = os.path.join("./logs", args.model_dir)
-    writer = SummaryWriter(logdir="./logs/")
+    writer = SummaryWriter(log_dir="./logs/")
     json_path = os.path.join(args.model_dir, "params.json")
     assert os.path.exists(json_path), "No json file found at {}".format(json_path)
     params = utils.Params(json_path)

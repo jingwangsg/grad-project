@@ -22,6 +22,7 @@ class LSTMNet(nn.Module):
         #  C from an expected input of size (N, C, L) or L from input of size (N, L)
         self.batchnorm = nn.BatchNorm1d(params.hidden_size)
         self.linear1 = nn.Linear(params.hidden_size, params.hidden_size//2)
+        self.selu = nn.SELU()
         self.linear2 = nn.Linear(params.hidden_size//2, params.output_size)
 
     def forward(self, x):
@@ -29,6 +30,7 @@ class LSTMNet(nn.Module):
         enc = lstm_out[:, -1]
         enc = self.batchnorm(enc)
         enc = self.linear1(enc)
+        enc = self.selu(enc)
         linear_out = self.linear2(enc)
         return linear_out
 
