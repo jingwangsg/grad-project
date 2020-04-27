@@ -68,8 +68,7 @@ def train(model, dataloader, optimizer, loss_fn, metrics, params, epoch):
     metric_str = " ; ".join("{}: {:05.3f}".format(k, v)\
                                 for (k, v) in metric_means.items())
     print("- Train metrics: " + metric_str)
-    for (k, v) in metric_means.items():
-        writer.add_scalar(args.model_type + "/scalar/train/"+k, v, epoch)
+    writer.add_scalar("scalar/train/", metric_means, epoch)
 
 def evaluate(model, dataloader, loss_fn, metrics, params, epoch):
     model.eval()
@@ -91,8 +90,7 @@ def evaluate(model, dataloader, loss_fn, metrics, params, epoch):
     metric_str = " ; ".join("{}: {:05.3f}".format(k, v)\
                                 for (k, v) in metric_means.items())
     print("- Test metrics: " + metric_str)
-    for (k, v) in metric_means.items():
-        writer.add_scalar(args.model_type + "/scalar/test/" + k, v, epoch)
+    writer.add_scalar("scalar/test/", metric_means, epoch)
 
     #* return metric to decide whether it's the best result during epochs
     return metric_means
@@ -145,7 +143,7 @@ def train_and_evaluate(model, train_dataset, val_dataset, optimizer, loss_fn, me
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_type")
+parser.add_argument("--model_name")
 parser.add_argument("--data_dir")
 parser.add_argument("--model_dir")
 parser.add_argument("--restore_file", default=None)
@@ -154,13 +152,14 @@ if (__name__ == "__main__"):
     """read from argument and call functions above to train and evaluate certain model setting in corresponding experiment folder
     
     Args from arg_parser:
+        --model_name: name of experiment  model_type + "_" + description
         --data_dir: using which dataset
         --model_dir: training and evaluating which model
         --restore_file: load weight according to which parameter file (if any)
     """
     args = parser.parse_args()
     log_path = os.path.join("./logs", args.model_dir)
-    writer = SummaryWriter(log_dir="./logs/")
+    writer = SummaryWriter(log_dir="./logs/"+args.model_name)
     json_path = os.path.join(args.model_dir, "params.json")
     assert os.path.exists(json_path), "No json file found at {}".format(json_path)
     params = utils.Params(json_path)
@@ -176,7 +175,8 @@ if (__name__ == "__main__"):
     train_dataset, val_dataset = torch.utils.data.random_split(raw_dataset, splited_len)
 
     models = {"LSTMNet": LSTMNet, "GRUNet": GRUNet}
-    model_class = models[args.model_type]
+    model_type = args.model_name.split("_")[0]
+    model_class = models[model_type]
     model = model_class(params).to(device)
     print(model)
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
