@@ -1,0 +1,11 @@
+{
+    "input_size": 2,
+    "batch_size": 2048,
+    "num_layers": 2,
+    "hidden_size": 128,
+    "output_size": 11,
+    "learning_rate": 1e-3,
+    "threshold": 0.5,
+    "num_epochs": 500,
+    "train_test_ratio": 0.7
+}
