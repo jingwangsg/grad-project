@@ -6,6 +6,7 @@ from model.dataset import MixedSignalDataset
 from torch.utils.data.dataloader import DataLoader
 from model.gru_net import GRUNet
 from model.lstm_net import LSTMNet
+from model.cldnn import CLDNN
 import model.dataset as dataset
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -181,7 +182,7 @@ if (__name__ == "__main__"):
     splited_len = [num_train_sample, num_sample - num_train_sample]
     train_dataset, val_dataset = torch.utils.data.random_split(raw_dataset, splited_len)
 
-    models = {"LSTMNet": LSTMNet, "GRUNet": GRUNet}
+    models = {"LSTMNet": LSTMNet, "GRUNet": GRUNet, "CLDNN": CLDNN}
     model_type = args.model_name.split("_")[0]
     model_class = models[model_type]
     model = model_class(params, device).to(device)
