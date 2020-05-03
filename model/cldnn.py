@@ -47,7 +47,7 @@ class CLDNN(nn.Module):
         num_time_step = x_concat.shape[1]
         x_concat = x_concat.reshape((-1, num_time_step, lstm_input_size))
         lstm_out,_ = self.lstm(x_concat)
-        enc = lstm_out[-1]
+        enc = lstm_out[:, -1]
         linear_out = self.linear(enc)
 
         return linear_out
