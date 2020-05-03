@@ -28,10 +28,10 @@ class CLDNN(nn.Module):
         self.lstm_hidden = (torch.randn(1, params.batch_size, params.lstm_hidden_size).to(device), \
                             torch.randn(1, params.batch_size, params.lstm_hidden_size).to(device))
         self.lstm = nn.LSTM(lstm_input_size, params.lstm_hidden_size, batch_first=True)
+        
         self.linear = nn.Linear(params.lstm_hidden_size, params.output_size)
 
     def forward(self, x):
-        import ipdb; ipdb.set_trace()
         x = x.unsqueeze(1)
         x = x.permute([0, 1, 3, 2])
         x = self.pad1(x)
@@ -46,8 +46,9 @@ class CLDNN(nn.Module):
         lstm_input_size = x_concat.shape[-2] * x_concat.shape[-1]
         num_time_step = x_concat.shape[1]
         x_concat = x_concat.reshape((-1, num_time_step, lstm_input_size))
-        lstm_out = self.lstm(x_concat)
-        linear_out = self.linear(lstm_out)
+        lstm_out,_ = self.lstm(x_concat)
+        enc = lstm_out[-1]
+        linear_out = self.linear(enc)
 
         return linear_out
         

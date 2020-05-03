@@ -1,0 +1,12 @@
+{
+    "num_filters": 50,
+    "kernel_size": 6,
+    "pad_size": 2,
+    "time_step": 128,
+    "batch_size": 1024,
+    "lstm_hidden_size": 256,
+    "output_size": 11,
+    "learning_rate": 1e-3,
+    "train_test_ratio": 0.8,
+    "num_epochs": 300
+}
