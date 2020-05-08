@@ -61,7 +61,7 @@ def save_checkpoint(state, is_best, checkpoint):
         shutil.copyfile(file_path, os.path.join(checkpoint, "best.pth.tar"))
 
 
-def load_checkpoint(checkpoint, model, optimizer=None):
+def load_checkpoint(checkpoint, model, optimizer=None, cuda_id=0):
     """ Load parameters from file into model and optimizer
     
     Args:
@@ -72,12 +72,13 @@ def load_checkpoint(checkpoint, model, optimizer=None):
 
     if (not os.path.exists(checkpoint)):
         raise("File doesn't exist {}".format(checkpoint))
-    checkpoint = torch.load(checkpoint)
+    checkpoint = torch.load(checkpoint, map_location="cuda:"+str(cuda_id))
     model.load_state_dict(checkpoint['state_dict'])
+    print("parameter is loaded")
     if (optimizer is not None):
         optimizer.load_state_dict(checkpoint['optim_dict'])
     
-    return checkpoint
+    return model, checkpoint
     #* more convenient if we want to check info in checkpoint
 
 def accuracy(batch_pred, batch_label, params):

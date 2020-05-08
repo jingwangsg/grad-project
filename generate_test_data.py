@@ -57,6 +57,8 @@ for snr in SNR_range:
 
 # import ipdb; ipdb.set_trace()
 
-with h5py.File(f"./data/test_data_{num_type}_{sample_per_pair}.h5", "w") as f:
-    f.create_dataset("logit_dict", data=logit_dict)
-    f.create_dataset('feature_dict', data=feature_dict)
+with open(f"./data/test_data_{num_type}_{sample_per_pair}.h5", "wb") as f:
+    pickle.dump((feature_dict, logit_dict), f, protocol=4);
+# with h5py.File(f"./data/test_data_{num_type}_{sample_per_pair}.h5", "w") as f:
+#     f.create_dataset("logit_dict", data=logit_dict)
+#     f.create_dataset('feature_dict', data=feature_dict)

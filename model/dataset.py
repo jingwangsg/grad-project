@@ -27,4 +27,3 @@ def load_data(data_dir, device):
         print("load feature_mat:\t{}".format(data_dict["data"].shape))
         print("load logit_mat:\t\t{}".format(data_dict["label"].shape))
     return data_dict
-    
