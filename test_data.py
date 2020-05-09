@@ -17,11 +17,11 @@ logit_mat = data[1]
 exp_dir = "./experiment/LSTMNet/wider_or_deeper/256x2/"
 
 params = Params(exp_dir + "params.json")
-device = torch.device("cuda")
+device = torch.device("cuda:1")
 
 model = LSTMNet(params, device).to(device)
 model.eval()
-model, _ = load_checkpoint(exp_dir + "best.pth.tar", model)
+model, _ = load_checkpoint(exp_dir + "last.pth.tar", model, cuda_id=1)
 loss_fn = F.binary_cross_entropy_with_logits
 accuracy_fn = metrics["accuracy"]
 
