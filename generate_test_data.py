@@ -48,16 +48,17 @@ for state in trange(1<<11):
         for idx in idx_list:
             mod = mod_list[idx]
             cur_feature_arr += data[(mod, snr)][:sample_per_pair]
-        cur_feature_arr = cur_feature_arr.transpose([0, 2, 1])
         feature_dict[snr].append(cur_feature_arr)
 
 for snr in SNR_range:
     feature_dict[snr] = np.vstack(feature_dict[snr])
     logit_dict[snr] = np.vstack(logit_dict[snr])
+    feature_dict[snr] = feature_dict[snr].reshape((feature_dict[snr].shape[0], -1))
+    feature_dict[snr] = normalize(feature_dict[snr], norm="l2")
+    feature_dict[snr] = feature_dict[snr].reshape((feature_dict[snr].shape[0], 2, 128))
+    feature_dict[snr] = feature_dict[snr].transpose([0, 2, 1])
 
-# import ipdb; ipdb.set_trace()
-
-with open(f"./data/test_data_{num_type}_{sample_per_pair}.h5", "wb") as f:
+with open(f"./data/test_data_{num_type}_{sample_per_pair}.pkl", "wb") as f:
     pickle.dump((feature_dict, logit_dict), f, protocol=4);
 # with h5py.File(f"./data/test_data_{num_type}_{sample_per_pair}.h5", "w") as f:
 #     f.create_dataset("logit_dict", data=logit_dict)

@@ -8,7 +8,7 @@ from model.lstm_net import LSTMNet
 from model.dataset import MixedSignalDataset
 from utils import Params, save_checkpoint, load_checkpoint, metrics
 
-with open("./data/test_data_5_100.h5", "rb") as f:
+with open("./data/test_data_5_100.pkl", "rb") as f:
     data = pickle.load(f, encoding="iso-8859-1")
 
 feature_mat = data[0]
@@ -17,14 +17,13 @@ logit_mat = data[1]
 exp_dir = "./experiment/LSTMNet/wider_or_deeper/256x2/"
 
 params = Params(exp_dir + "params.json")
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 
 model = LSTMNet(params, device).to(device)
 model.eval()
-model, _ = load_checkpoint(exp_dir + "last.pth.tar", model, cuda_id=1)
+model, _ = load_checkpoint(exp_dir + "best.pth.tar", model, cuda_id=0)
 loss_fn = F.binary_cross_entropy_with_logits
 accuracy_fn = metrics["accuracy"]
-
 
 for snr in feature_mat.keys():
     data_dict = {}

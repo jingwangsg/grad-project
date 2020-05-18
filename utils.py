@@ -55,9 +55,11 @@ def save_checkpoint(state, is_best, checkpoint):
         print("Dictionary exists!")
 
     # save dict() into .pth.tar (only for torch)
+    print("saved as latest")
     torch.save(state, file_path)
 
     if (is_best):
+        print("saved as best")
         shutil.copyfile(file_path, os.path.join(checkpoint, "best.pth.tar"))
 
 
@@ -84,8 +86,9 @@ def load_checkpoint(checkpoint, model, optimizer=None, cuda_id=0):
 def accuracy(batch_pred, batch_label, params):
     batch_pred = torch.sigmoid(batch_pred)
     threshold = params.threshold
-    return (((batch_pred > threshold) == batch_label).sum().item()) \
+    ret = (((batch_pred > threshold) == batch_label).sum().item()) \
         / (params.batch_size * params.output_size)
+    return ret
 
 metrics = {
     "accuracy":accuracy
